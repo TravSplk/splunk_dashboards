@@ -4,8 +4,8 @@
     <query>index=_internal sourcetype=splunkd_ui_access uri_path="*/app/*" NOT user="-" 
 | rex field=uri "app/(?&lt;app&gt;[^/]+)/(?&lt;dashboard&gt;[^?/\s]+)" 
 | search (dashboard!="search" dashboard!="home" dashboard!="alert" dashboard!="@go" dashboard!="%40go" dashboard!="lookup_edit" dashboard!="data_lab" dashboard!="dataset" dashboard!="datasets" dashboard!="alerts" dashboard!="dashboards" dashboard!="reports" dashboard!="report" dashboard!="job_manager" dashboard!="show_source" ) </query>
-    <earliest>@d</earliest>
-    <latest>now</latest>
+    <earliest>$timepick.earliest$</earliest>
+    <latest>$timepick.latest$</latest>
     <sampleRatio>1</sampleRatio>
   </search>
   <fieldset submitButton="false">
