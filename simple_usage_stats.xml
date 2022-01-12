@@ -12,8 +12,8 @@
     <input type="time" token="timepick">
       <label></label>
       <default>
-          <earliest>$timepick.earliest$</earliest>
-          <latest>$timepick.latest$</latest>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
       </default>
     </input>
   </fieldset>
