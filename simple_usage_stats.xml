@@ -1,7 +1,7 @@
 <form>
   <label>Simple Usage Stats</label>
   <search id="base">
-    <query>index=_internal sourcetype=splunkd_ui_access uri_path="*/app/*" NOT user="-" 
+    <query>index=_internal sourcetype=splunkd_ui_access uri_path="*/app/*" NOT user="-" $servers$
 | rex field=uri "app/(?&lt;app&gt;[^/]+)/(?&lt;dashboard&gt;[^?/\s]+)" 
 | search (dashboard!="search" dashboard!="home" dashboard!="alert" dashboard!="@go" dashboard!="%40go" dashboard!="lookup_edit" dashboard!="data_lab" dashboard!="dataset" dashboard!="datasets" dashboard!="alerts" dashboard!="dashboards" dashboard!="reports" dashboard!="report" dashboard!="job_manager" dashboard!="show_source" ) 
 | join type=inner user 
@@ -14,13 +14,20 @@
     <latest>$timepick.latest$</latest>
     <sampleRatio>1</sampleRatio>
   </search>
-  <fieldset submitButton="false">
+  <fieldset submitButton="true" autoRun="false">
     <input type="time" token="timepick">
       <label>Time</label>
       <default>
         <earliest>-24h@h</earliest>
         <latest>now</latest>
       </default>
+    </input>
+    <input type="text" token="servers">
+      <label>Servers (comma-separated)</label>
+      <default>*</default>
+      <prefix>host IN (</prefix>
+      <suffix>)</suffix>
+      <initialValue>*</initialValue>
     </input>
     <input type="text" token="role_exclude">
       <label>Role Exclude Wildcard</label>
@@ -33,13 +40,13 @@
       <title>Unique Users</title>
       <single>
         <search base="base">
-          <query>| timechart dc(user) as users</query>
+          <query>| stats dc(user) as users</query>
         </search>
         <option name="colorBy">value</option>
         <option name="colorMode">none</option>
         <option name="drilldown">none</option>
         <option name="numberPrecision">0</option>
-        <option name="rangeColors">["0x53a051", "0x0877a6", "0xf8be34", "0xf1813f", "0xdc4e41"]</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
         <option name="rangeValues">[0,30,70,100]</option>
         <option name="refresh.display">progressbar</option>
         <option name="showSparkline">1</option>
@@ -55,10 +62,10 @@
       </single>
     </panel>
     <panel>
-      <title>Unique Roles</title>
+      <title>Unique Apps</title>
       <single>
         <search base="base">
-          <query>| timechart dc(roles) as roles</query>
+          <query>| stats dc(app) as apps</query>
         </search>
         <option name="colorBy">value</option>
         <option name="colorMode">none</option>
@@ -78,7 +85,31 @@
         <option name="useColors">0</option>
         <option name="useThousandSeparators">1</option>
       </single>
-    </panel>
+    </panel>  <panel>
+      <title>Unique Dashboards</title>
+      <single>
+        <search base="base">
+          <query>| stats dc(dashboard) as dashboard</query>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051", "0x0877a6", "0xf8be34", "0xf1813f", "0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel> 
   </row>
   <row>
     <panel>
