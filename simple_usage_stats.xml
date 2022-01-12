@@ -1,0 +1,59 @@
+<form>
+  <label>Simple Usage Stats</label>
+  <search id="base">
+    <query>index=_internal sourcetype=splunkd_ui_access uri_path="*/app/*" NOT user="-" 
+| rex field=uri "app/(?&lt;app&gt;[^/]+)/(?&lt;dashboard&gt;[^?/\s]+)" 
+| search (dashboard!="search" dashboard!="home" dashboard!="alert" dashboard!="@go" dashboard!="%40go" dashboard!="lookup_edit" dashboard!="data_lab" dashboard!="dataset" dashboard!="datasets" dashboard!="alerts" dashboard!="dashboards" dashboard!="reports" dashboard!="report" dashboard!="job_manager" dashboard!="show_source" ) </query>
+    <earliest>@d</earliest>
+    <latest>now</latest>
+    <sampleRatio>1</sampleRatio>
+  </search>
+  <fieldset submitButton="false">
+    <input type="time" token="timepick">
+      <label></label>
+      <default>
+          <earliest>$timepick.earliest$</earliest>
+          <latest>$timepick.latest$</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>User App Dashboard Stats</title>
+      <table>
+        <search base="base">
+          <query>
+| stats count as total_views, values(dashboard) as dashboards by user, app
+| table user, app, dashboards, total_views 
+| sort - total_views</query>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Content Usage Summary</title>
+      <table>
+        <search base="base">
+          <query>
+| stats count as total_views, dc(user) as total_users, values(user) as users by app, dashboard 
+| table app, dashboard, total_users, total_views 
+| sort - total_views</query>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>
