@@ -3,20 +3,83 @@
   <search id="base">
     <query>index=_internal sourcetype=splunkd_ui_access uri_path="*/app/*" NOT user="-" 
 | rex field=uri "app/(?&lt;app&gt;[^/]+)/(?&lt;dashboard&gt;[^?/\s]+)" 
-| search (dashboard!="search" dashboard!="home" dashboard!="alert" dashboard!="@go" dashboard!="%40go" dashboard!="lookup_edit" dashboard!="data_lab" dashboard!="dataset" dashboard!="datasets" dashboard!="alerts" dashboard!="dashboards" dashboard!="reports" dashboard!="report" dashboard!="job_manager" dashboard!="show_source" ) </query>
+| search (dashboard!="search" dashboard!="home" dashboard!="alert" dashboard!="@go" dashboard!="%40go" dashboard!="lookup_edit" dashboard!="data_lab" dashboard!="dataset" dashboard!="datasets" dashboard!="alerts" dashboard!="dashboards" dashboard!="reports" dashboard!="report" dashboard!="job_manager" dashboard!="show_source" ) 
+| join type=inner user 
+    [| rest /services/authentication/users splunk_server=local 
+    | rename title as user, realname as name 
+    | fields user, roles, name] 
+    | search roles!="$role_exclude$" 
+    </query>
     <earliest>$timepick.earliest$</earliest>
     <latest>$timepick.latest$</latest>
     <sampleRatio>1</sampleRatio>
   </search>
   <fieldset submitButton="false">
     <input type="time" token="timepick">
-      <label></label>
+      <label>Time</label>
       <default>
         <earliest>-24h@h</earliest>
         <latest>now</latest>
       </default>
     </input>
+    <input type="text" token="role_exclude">
+      <label>Role Exclude Wildcard</label>
+      <default>*admin*</default>
+      <initialValue>*admin*</initialValue>
+    </input>
   </fieldset>
+  <row>
+    <panel>
+      <title>Unique Users</title>
+      <single>
+        <search base="base">
+          <query>| timechart dc(user) as users</query>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051", "0x0877a6", "0xf8be34", "0xf1813f", "0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Unique Roles</title>
+      <single>
+        <search base="base">
+          <query>| timechart dc(roles) as roles</query>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051", "0x0877a6", "0xf8be34", "0xf1813f", "0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+  </row>
   <row>
     <panel>
       <title>User App Dashboard Stats</title>
