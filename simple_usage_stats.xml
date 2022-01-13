@@ -1,5 +1,6 @@
 <form>
   <label>Simple Usage Stats</label>
+  <description>This dashboard requires admin access to function properly!</description>
   <search id="base">
     <query>index=_internal sourcetype=splunkd_ui_access uri_path="*/app/*" NOT user="-" $servers$
 | rex field=uri "app/(?&lt;app&gt;[^/]+)/(?&lt;dashboard&gt;[^?/\s]+)" 
@@ -18,7 +19,7 @@
     <input type="time" token="timepick">
       <label>Time</label>
       <default>
-        <earliest>-24h@h</earliest>
+        <earliest>-30d@d</earliest>
         <latest>now</latest>
       </default>
     </input>
@@ -33,6 +34,13 @@
       <label>Role Exclude Wildcard</label>
       <default>*admin*</default>
       <initialValue>*admin*</initialValue>
+    </input>
+    <input type="radio" token="hash_user" searchWhenChanged="true">
+      <label>Hash Usernames</label>
+      <choice value="1">Yes</choice>
+      <choice value="0">No</choice>
+      <default>1</default>
+      <initialValue>1</initialValue>
     </input>
   </fieldset>
   <row>
@@ -85,7 +93,8 @@
         <option name="useColors">0</option>
         <option name="useThousandSeparators">1</option>
       </single>
-    </panel>  <panel>
+    </panel>
+    <panel>
       <title>Unique Dashboards</title>
       <single>
         <search base="base">
@@ -109,34 +118,36 @@
         <option name="useColors">0</option>
         <option name="useThousandSeparators">1</option>
       </single>
-    </panel> 
+    </panel>
   </row>
   <row>
     <panel>
-      <title>User App Dashboard Stats</title>
+      <title>Content Usage Summary</title>
       <table>
         <search base="base">
-          <query>
-| stats count as total_views, values(dashboard) as dashboards by user, app
-| table user, app, dashboards, total_views 
+          <query>| stats count as total_views, sparkline(count) as sparkline, dc(user) as total_users, values(user) as users by app, dashboard 
+| table app, dashboard, total_users, total_views, sparkline
 | sort - total_views</query>
         </search>
         <option name="count">20</option>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
         <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
         <option name="rowNumbers">false</option>
         <option name="totalsRow">false</option>
         <option name="wrap">true</option>
       </table>
     </panel>
+  </row>
+  <row>
     <panel>
-      <title>Content Usage Summary</title>
+      <title>User App Dashboard Stats</title>
       <table>
         <search base="base">
-          <query>
-| stats count as total_views, dc(user) as total_users, values(user) as users by app, dashboard 
-| table app, dashboard, total_users, total_views 
+          <query>| stats count as total_views, sparkline(count) as sparkline, values(dashboard) as dashboards by user, app
+| table user, app, dashboards, total_views, sparkline
+| eval user=if($hash_user$=1,sha1(user),user)
 | sort - total_views</query>
         </search>
         <option name="count">20</option>
